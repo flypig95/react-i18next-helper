@@ -6,6 +6,6 @@ i18n({
   src: ["src/react"],
   excluded: [],
   // fnName,
-  // fnWithZh: false,
+  fnWithZh: true,
   headless: false,
 });

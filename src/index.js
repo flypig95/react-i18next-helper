@@ -36,7 +36,7 @@ async function main({
   do {
     file = files[i];
     const code = fs.readFileSync(file, "utf8");
-    const astData = ast({ code, babelConfig, file, fnName });
+    const astData = ast({ code, babelConfig, file, fnName, fnWithZh });
 
     if (astData.length) {
       const translateData = await translate({
@@ -55,29 +55,31 @@ async function main({
     i++;
   } while (i < files.length);
 
-  const otherLanguage = language.filter((v) => v !== "en");
-  outLanguageJSON({ page, language: otherLanguage, outputPath });
+  outLanguageJSON({ page, language, outputPath });
 }
 
 const outLanguageJSON = async ({ page, language, outputPath }) => {
-  let i = 0;
-  const zhJSON = require(path.resolve(process.cwd(), outputPath, "zh.json"));
-  const astData = Object.keys(zhJSON).map((k) => ({
-    id: k,
-    value: zhJSON[k],
-  }));
+  language = language.filter((v) => v !== "en");
+  if (language.length) {
+    let i = 0;
+    const zhJSON = require(path.resolve(process.cwd(), outputPath, "zh.json"));
+    const astData = Object.keys(zhJSON).map((k) => ({
+      id: k,
+      value: zhJSON[k],
+    }));
 
-  do {
-    const lang = language[i];
-    const translateData = await translate({
-      page,
-      astData,
-      from: "zh",
-      to: lang,
-    });
-    outJSON({ translateData, lang, outputPath });
-    i++;
-  } while (i < language.length);
+    do {
+      const lang = language[i];
+      const translateData = await translate({
+        page,
+        astData,
+        from: "zh",
+        to: lang,
+      });
+      outJSON({ translateData, lang, outputPath });
+      i++;
+    } while (i < language.length);
+  }
 };
 
 module.exports = main;

@@ -2,7 +2,7 @@ const babelParser = require("@babel/parser");
 const traverse = require("@babel/traverse").default;
 const helper = require("./helper");
 
-const ast = ({ code, babelConfig = {}, file, fnName }) => {
+const ast = ({ code, babelConfig = {}, file, fnName, fnWithZh }) => {
   const ast = babelParser.parse(code, babelConfig);
   const data = [];
 
@@ -11,13 +11,16 @@ const ast = ({ code, babelConfig = {}, file, fnName }) => {
       const node = path.node;
       const { value } = node;
 
-      if (helper.isChinease(value)) {
+      if (isPushData({ value, path, fnWithZh, fnName })) {
         const obj = {
           file,
           start: node.start,
           end: node.end,
-          value: value,
-          replaceFn: (id) => `{${fnName}('${id}')}`,
+          value,
+          replaceFn: (id) =>
+            fnWithZh
+              ? `{${fnName}({id: '${id}', zh: '${helper.trim(value)}'})}`
+              : `{${fnName}({id: '${id}'})}`,
         };
         data.push(obj);
       }
@@ -29,14 +32,17 @@ const ast = ({ code, babelConfig = {}, file, fnName }) => {
         value: { value, start, end },
       } = node;
 
-      if (helper.isChinease(value)) {
+      if (isPushData({ value, path, fnWithZh, fnName })) {
         const obj = {
           file,
           start,
           end,
           offset: -2,
-          value: value,
-          replaceFn: (id) => `{${fnName}('${id}')}`,
+          value,
+          replaceFn: (id) =>
+            fnWithZh
+              ? `{${fnName}({id: '${id}', zh: '${helper.trim(value)}'})}`
+              : `{${fnName}({id: '${id}'})}`,
         };
         data.push(obj);
       }
@@ -48,13 +54,16 @@ const ast = ({ code, babelConfig = {}, file, fnName }) => {
         value: { raw },
       } = node;
 
-      if (helper.isChinease(raw)) {
+      if (isPushData({ value: raw, path, fnWithZh, fnName })) {
         const obj = {
           file,
           start: node.start,
           end: node.end,
           value: raw,
-          replaceFn: (id) => `\${${fnName}('${id}')}`,
+          replaceFn: (id) =>
+            fnWithZh
+              ? `\${${fnName}({id: '${id}', zh: '${helper.trim(raw)}'})}`
+              : `\${${fnName}({id: '${id}'})}`,
         };
         data.push(obj);
       }
@@ -74,20 +83,34 @@ const ast = ({ code, babelConfig = {}, file, fnName }) => {
         return;
       }
 
-      if (helper.isChinease(value)) {
+      if (isPushData({ value, path, fnWithZh, fnName })) {
         const obj = {
           file,
           start: node.start,
           end: node.end,
-          value: value,
+          value,
           offset: -2,
-          replaceFn: (id) => `${fnName}('${id}')`,
+          replaceFn: (id) =>
+            fnWithZh
+              ? `${fnName}({id: '${id}', zh: '${helper.trim(value)}'})`
+              : `${fnName}({id: '${id}'})`,
         };
         data.push(obj);
       }
     },
   });
   return data;
+};
+
+const isPushData = ({ value, path, fnWithZh, fnName }) => {
+  const parentNode = path.parent;
+  const isWrapped =
+    parentNode.type === "CallExpression" && parentNode.callee.name === fnName;
+  if (fnWithZh) {
+    return helper.isChinease(value) && !isWrapped;
+  } else {
+    return helper.isChinease(value);
+  }
 };
 
 module.exports = ast;

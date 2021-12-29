@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const helper = require("./helper");
 
 const outJSON = ({ translateData, lang, outputPath }) => {
   let isExistFile = true;
@@ -25,7 +26,7 @@ const outJSON = ({ translateData, lang, outputPath }) => {
     const { id, dst, value } = item;
     if (!langData[id]) {
       const v = lang === "zh" ? value : dst;
-      langData[id] = v.replace("\n", "").trim();
+      langData[id] = helper.trim(v);
     }
   });
 
