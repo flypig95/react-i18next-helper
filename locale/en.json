@@ -1,0 +1,17 @@
+{
+	"task-list-management": "task list management",
+	"task-list-name": "task list name",
+	"please-enter-the-task": "please enter the task list name",
+	"number": "number",
+	"search": "search",
+	"reset": "reset",
+	"task-list-industry": "task list industry",
+	"creator": "creator",
+	"creation-time": "creation time",
+	"total-payment": "total payment",
+	"state": "state",
+	"operation": "operation",
+	"details": "details",
+	"edit": "edit",
+	"new-task-list": "new task list"
+}
