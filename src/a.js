@@ -5,7 +5,7 @@ i18n({
   // outputPath: "locale",
   src: ["src/react"],
   excluded: [],
-  // fn,
+  // fnName,
   // fnWithZh: false,
   headless: false,
 });

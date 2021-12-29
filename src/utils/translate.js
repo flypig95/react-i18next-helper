@@ -24,10 +24,19 @@ const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
       .replace(/[?!:;,.'']+/g, "");
 
     translateData[i] = {
-      ...translateData[i],
       id,
       dst,
+      ...translateData[i],
     };
+
+    if (i === 10) {
+      // wait 2s for 10 translation
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve();
+        }, 2000);
+      });
+    }
 
     i++;
   } while (i < translateData.length);

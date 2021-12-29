@@ -2,7 +2,7 @@ const babelParser = require("@babel/parser");
 const traverse = require("@babel/traverse").default;
 const helper = require("./helper");
 
-const ast = ({ code, babelConfig = {}, file, fn }) => {
+const ast = ({ code, babelConfig = {}, file, fnName }) => {
   const ast = babelParser.parse(code, babelConfig);
   const data = [];
 
@@ -17,7 +17,7 @@ const ast = ({ code, babelConfig = {}, file, fn }) => {
           start: node.start,
           end: node.end,
           value: value,
-          replaceFn: (id) => `{${fn}('${id}')}`,
+          replaceFn: (id) => `{${fnName}('${id}')}`,
         };
         data.push(obj);
       }
@@ -36,7 +36,7 @@ const ast = ({ code, babelConfig = {}, file, fn }) => {
           end,
           offset: -2,
           value: value,
-          replaceFn: (id) => `{${fn}('${id}')}`,
+          replaceFn: (id) => `{${fnName}('${id}')}`,
         };
         data.push(obj);
       }
@@ -54,7 +54,7 @@ const ast = ({ code, babelConfig = {}, file, fn }) => {
           start: node.start,
           end: node.end,
           value: raw,
-          replaceFn: (id) => `\${${fn}('${id}')}`,
+          replaceFn: (id) => `\${${fnName}('${id}')}`,
         };
         data.push(obj);
       }
@@ -81,7 +81,7 @@ const ast = ({ code, babelConfig = {}, file, fn }) => {
           end: node.end,
           value: value,
           offset: -2,
-          replaceFn: (id) => `${fn}('${id}')`,
+          replaceFn: (id) => `${fnName}('${id}')`,
         };
         data.push(obj);
       }

@@ -1,156 +1,252 @@
+/* eslint-disable no-console */
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Input, Table, Space, Popover } from 'antd';
-import { useAntdTable, useDebounceFn } from 'ahooks';
-import FormRenderer, { FormSpaceRender } from 'antd-form-render';
-import { Link } from 'react-router-dom';
-import * as _ from 'lodash';
+import FormRender from 'antd-form-render';
+import { obj2Options } from '~/utils/helper';
+import {
+  Form,
+  Button,
+  Space,
+  Input,
+  Radio,
+  Select,
+  Steps,
+  Card,
+  InputNumber,
+  Popconfirm,
+  message,
+} from 'antd';
+import { useParams } from 'react-router-dom';
+import UploadManage from '../UploadManage';
 import * as service from '~/service';
-import usePageTitle from '~/hooks/usePageTitle';
+import './AddTask.less';
+const { Step } = Steps;
 
-const getTableData = ({ current = 1, pageSize = 10 }, formData = {}) => {
-  return service
-    .getTaskList({
-      pageSize,
-      currentPage: current,
-      param: { ...formData },
-    })
-    .then((res) => {
-      return {
-        total: res.totalItem,
-        list: res.resultList || [],
-      };
-    })
-    .catch(() => {});
-};
-
-export default function CompTaskList({ history }) {
-  usePageTitle(t('task-list-management'));
-
+export default function AddCompTask({ history }) {
+  const [data, setData] = useState({
+    fee: 0,
+  });
+  const [files, setFiles] = useState([]);
+  const [industries, setIndustries] = useState([]);
+  const [spInfo, setSpInfo] = useState({}); // 服务商信息
+  const [companies, setCompanies] = useState([]);
+  // baseform
   const [form] = Form.useForm();
-  const { tableProps, search, loading, refresh } = useAntdTable(getTableData, { form });
-  const { submit, reset } = search;
 
-  const searchLayout = [
+  const { id } = useParams();
+
+  useEffect(() => {
+    form.resetFields();
+    Promise.all([
+      service.getTaskIndustries(),
+      service.getServiceProviderInfo(),
+      service.getCustomerCompany(),
+    ])
+      .then(([_indestries, _spInfo, _company]) => {
+        setIndustries(obj2Options(_indestries));
+        setSpInfo(_spInfo || {});
+
+        _company = _company.map((item) => ({
+          label: item.name,
+          value: item.custId,
+        }));
+        setCompanies(_company);
+        form.setFieldsValue({
+          custId: _company[0].value,
+        });
+      })
+      .catch(() => {});
+
+    if (id) {
+      service
+        .getTaskDetail(id)
+        .then((res) => {
+          res.industry = res.industry.map((v) => v.toString());
+          res.custId = res.custId?.toString();
+          setData(res);
+          form.setFieldsValue(res);
+          setFiles(res.contracts);
+        })
+        .catch(() => {});
+    }
+  }, []);
+
+  const serviceFee = (spInfo.rate / 100) * data.fee;
+  const total = serviceFee + data.fee;
+
+  // base layout
+  const layout = [
+    {
+      type: Select,
+      label: t('customer-enterprise'),
+      placeholder: t('please-select'),
+      name: 'custId',
+      elProps: {
+        options: companies,
+        disabled: companies.length === 1,
+      },
+      itemProps: {
+        rules: [{ required: true, message: t('please-select') }],
+      },
+    },
+    {
+      type: Select,
+      label: t('task-list-industry'),
+      placeholder: t('please-select'),
+      name: 'industry',
+      elProps: {
+        options: industries,
+        mode: 'multiple',
+      },
+      itemProps: {
+        rules: [{ required: true, message: t('please-select') }],
+      },
+    },
     {
       type: Input,
       label: t('task-list-name'),
-      placeholder: t('please-enter-the-task'),
+      placeholder: t('please-enter'),
       name: 'name',
-      elProps: {
-        allowClear: true,
+      itemProps: {
+        rules: [{ required: true, message: t('please-enter') }],
       },
     },
     {
-      type: Input,
-      label: t('number'),
-      placeholder: t('please-enter-the-task'),
-      name: 'taskNo',
+      type: Input.TextArea,
+      label: t('task-order-description'),
+      placeholder: t('information-such-as-business'),
+      name: 'remark',
       elProps: {
-        allowClear: true,
+        autoSize: {
+          minRows: 8,
+        },
+        showCount: true,
+        maxLength: 255,
       },
     },
     {
-      type: Button,
+      type: InputNumber,
+      label: t('total-tasks'),
+      placeholder: t('please-enter'),
+      name: 'fee',
       elProps: {
-        type: 'primary',
-        htmlType: 'submit',
-        children: t('search'),
+        precision: 2,
+        step: 0.01,
+        min: 0,
+        style: { width: 200 },
+      },
+      itemProps: {
+        rules: [{ required: true, message: t('please-enter') }],
       },
     },
     {
-      type: Button,
-      elProps: {
-        htmlType: 'reset',
-        children: t('reset'),
-        onClick: reset,
-      },
-    },
-  ];
-
-  const columns = [
-    {
-      title: t('number'),
-      dataIndex: 'taskNo',
-    },
-    {
-      title: t('task-list-industry'),
-      dataIndex: 'industryName',
-      render: (text) => text.join('、'),
-    },
-    {
-      title: t('task-list-name'),
-      dataIndex: 'name',
-    },
-    {
-      title: t('creator'),
-      dataIndex: 'creator',
-    },
-    {
-      title: t('creation-time'),
-      dataIndex: 'gmtCreated',
-    },
-    {
-      title: t('total-payment'),
-      dataIndex: 'total',
-      render: (text) => <b>¥{text.toLocaleString()}</b>,
-    },
-    // {
-    //   title: '支付方式',
-    //   dataIndex: 'payType',
-    //   render: (text) => text || '--',
-    // },
-    {
-      title: t('state'),
-      dataIndex: 'statusName',
-      render: (text, record) => {
+      render() {
         return (
-          <>
-            {text}
-            {/* {record.status === '7' && record.extra && (
-              <Popover content={<div style={{ width: 200 }}>{record.extra}</div>} trigger="click">
-                <a>查看原因</a>
-              </Popover>
-            )} */}
-          </>
+          <Form.Item label={t('lump-sum-mode-rate')}>
+            {spInfo.rate}%<span style={{ marginLeft: 10, color: '#d9d9d9' }}>{t('(minimum-rate-none)')}</span>
+          </Form.Item>
         );
       },
     },
     {
-      title: t('operation'),
-      dataIndex: 'op',
-      render: (text, record) => {
+      render() {
         return (
-          <Space>
-            <Link
-              to={`/biz/customer-enterprise/task-detail/${record.id}`}
-              style={{ whiteSpace: 'nowrap' }}
-            >{t('details')}</Link>
-            <Link
-              to={`/biz/customer-enterprise/add-task/${record.id}`}
-              style={{ whiteSpace: 'nowrap' }}
-            >{t('edit')}</Link>
-          </Space>
+          <Form.Item label={t('service-charge')}>
+            <Input disabled value={serviceFee} style={{ width: 200 }} />
+          </Form.Item>
+        );
+      },
+    },
+    {
+      render() {
+        return (
+          <Form.Item label={t('total-amount')}>
+            <Input disabled value={total} style={{ width: 200 }} />
+          </Form.Item>
+        );
+      },
+    },
+    {
+      render() {
+        return (
+          <Form.Item label={t('collection-information')}>
+            <div className="skxx">
+              <div>{spInfo.bankName}</div>
+              <div>{spInfo.bankNum}</div>
+              <div>{t('legal-person-information')}{spInfo.legalMan}</div>
+            </div>
+          </Form.Item>
         );
       },
     },
   ];
 
   return (
-    <div className="form-page">
-      <div className="list-search">
-        <Button type="primary" onClick={() => history.push('/biz/customer-enterprise/add-task')}>{t('new-task-list')}</Button>
-        <Form form={form} onFinish={submit}>
-          <FormSpaceRender layoutData={searchLayout} />
+    <div className="form-page add-comp-task">
+      {/* <div style={{ margin: '20px auto 50px', width: '50%' }}>
+        <Steps current={0} size="small">
+          <Step title="第一步" description="任务单信息填写" />
+          <Step title="第二步" description="支付" />
+        </Steps>
+      </div> */}
+      <Card title={t('task-list-information')}>
+        <Form
+          form={form}
+          initialValues={data}
+          labelCol={{ span: 6 }}
+          style={{ width: '50%' }}
+          onValuesChange={(changedValues, allValues) => {
+            setData(allValues);
+          }}
+        >
+          <FormRender layoutData={layout} />
         </Form>
-      </div>
-      <div>
-        <Table
-          className="table-content"
-          columns={columns}
-          {...tableProps}
-          loading={loading}
-          rowKey="id"
-        />
+      </Card>
+
+      <UploadManage files={files} setFiles={setFiles} title={t('business-contract')} style={{ marginTop: 30 }} />
+
+      <div style={{ marginTop: 30, textAlign: 'center' }}>
+        <Space>
+          <Button onClick={() => history.goBack()}>{t('cancel')}</Button>
+          <Button
+            type="primary"
+            ghost
+            onClick={() => {
+              form
+                .validateFields()
+                .then((values) => {
+                  const contracts = files?.map((file) => ({
+                    link: file.response?.result?.url || file.link,
+                    name: file.response?.result?.name || file.name,
+                    side: 'FRONT',
+                    size: file.response?.result?.size || file.size,
+                  }));
+                  const params = {
+                    ...values,
+                    contracts,
+                    total,
+                    serviceFee,
+                  };
+                  let fn = null;
+                  let msg = '';
+                  if (id) {
+                    fn = service.updateTask;
+                    msg = t('update-succeeded');
+                    params.id = id;
+                  } else {
+                    fn = service.createTask;
+                    msg = t('new-successfully');
+                  }
+
+                  fn(params).then((res) => {
+                    message.success(msg);
+                    history.push('/biz/customer-enterprise/task-list');
+                  });
+                })
+                .catch((error) => console.log(error));
+            }}
+          >{t('confirm')}{id ? t('to-update') : t('newly-build')}
+          </Button>
+        </Space>
       </div>
     </div>
   );
