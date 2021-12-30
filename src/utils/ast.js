@@ -103,11 +103,9 @@ const ast = ({ code, babelConfig = {}, file, fnName, fnWithZh }) => {
 };
 
 const isPushData = ({ value, path, fnWithZh, fnName }) => {
-  const parentNode = path.parent;
-  const isWrapped =
-    parentNode.type === "CallExpression" && parentNode.callee.name === fnName;
   if (fnWithZh) {
-    return helper.isChinease(value) && !isWrapped;
+    const parentNode = path.findParent((x) => x.isCallExpression())?.node || {};
+    return helper.isChinease(value) && parentNode.callee?.name !== fnName;
   } else {
     return helper.isChinease(value);
   }

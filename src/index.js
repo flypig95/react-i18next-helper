@@ -29,9 +29,15 @@ async function main({
     const code = fs.readFileSync(file, "utf8");
     const astData = ast({ code, babelConfig, file, fnName, fnWithZh });
     const diffAstData = getDiffAstData({ astData, outputPath, lang: "zh" });
-    const sameAstData = astData.filter(
-      (item) => !diffAstData.find((v) => item.value === v.value)
-    );
+    const zhJSON = getJSON({ outputPath, lang: "zh" });
+    const sameAstData = astData.filter((item) => {
+      Object.keys(zhJSON).forEach((k) => {
+        if (zhJSON[k] === item.value) {
+          item.id = k;
+        }
+      });
+      return !diffAstData.find((v) => item.value === v.value);
+    });
 
     if (diffAstData.length) {
       const translateData = await translate({
