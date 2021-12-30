@@ -1,33 +1,40 @@
+const chalk = require("chalk");
+
 const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
+  if (!astData.length) return [];
   const translateData = astData.slice();
   let i = 0;
   do {
-    await page.goto(
-      `https://fanyi.baidu.com/#${from}/${to}/${translateData[i].value}`
-    );
-    if (i === 0) await page.reload();
+    const { value } = translateData[i];
+    try {
+      await page.goto(`https://fanyi.baidu.com/#${from}/${to}/${value}`);
+      if (i === 0) await page.reload();
 
-    const response = await page
-      .waitForResponse(
-        (res) =>
-          res.url() ===
-            `https://fanyi.baidu.com/v2transapi?from=${from}&to=${to}` &&
-          res.status() === 200
-      )
-      .catch(async (err) => await page.reload());
-    const data = await response.json();
-    const dst = data.trans_result.data[0]?.dst?.toLowerCase();
-    const id = dst
-      .split(" ")
-      .slice(0, 4)
-      .join("-")
-      .replace(/[?!:;,.'']+/g, "");
+      const response = await page
+        .waitForResponse(
+          (res) =>
+            res.url() ===
+              `https://fanyi.baidu.com/v2transapi?from=${from}&to=${to}` &&
+            res.status() === 200
+        )
+        .catch(async (err) => await page.reload());
+      const data = await response.json();
+      const dst = data.trans_result.data[0]?.dst?.toLowerCase();
 
-    translateData[i] = {
-      id,
-      dst,
-      ...translateData[i],
-    };
+      const id = dst
+        .split(" ")
+        .slice(0, 4)
+        .join("-")
+        .replace(/[?!:;,.'']+/g, "");
+
+      translateData[i] = {
+        id,
+        dst,
+        ...translateData[i],
+      };
+    } catch (err) {
+      console.error(chalk.red(`翻译${value}至${to}失败`));
+    }
 
     // if (i === 10) {
     //   // wait 2s for 10 translation

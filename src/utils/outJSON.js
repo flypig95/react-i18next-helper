@@ -3,6 +3,7 @@ const path = require("path");
 const helper = require("./helper");
 
 const outJSON = ({ translateData, lang, outputPath }) => {
+  if (!translateData.length) return;
   let isExistFile = true;
   outputPath = path.resolve(process.cwd(), outputPath);
   const filePath = (_lang = "zh") => path.resolve(outputPath, `${_lang}.json`);

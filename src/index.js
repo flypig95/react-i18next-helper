@@ -9,15 +9,6 @@ const changeFile = require("./utils/changeFile");
 const outJSON = require("./utils/outJSON");
 const babelConfig = require("./babelConfig");
 
-// i18n({
-//   language: ["en", "de"],
-//   outputPath: "",
-//   src: [],
-//   excluded: [],
-//   fnName,
-//   headless: false,
-// });
-
 async function main({
   language = ["en"],
   src = [],
@@ -37,49 +28,83 @@ async function main({
     file = files[i];
     const code = fs.readFileSync(file, "utf8");
     const astData = ast({ code, babelConfig, file, fnName, fnWithZh });
+    const diffAstData = getDiffAstData({ astData, outputPath, lang: "zh" });
+    const sameAstData = astData.filter(
+      (item) => !diffAstData.find((v) => item.value === v.value)
+    );
 
-    if (astData.length) {
+    if (diffAstData.length) {
       const translateData = await translate({
         page,
-        astData,
+        astData: diffAstData,
         from: "zh",
         to: "en",
       });
-
       outJSON({ translateData, lang: "zh", outputPath });
       if (language.indexOf("en") > -1) {
         outJSON({ translateData, lang: "en", outputPath });
       }
+
       changeFile(translateData);
     }
+
+    if (sameAstData.length) {
+      changeFile(sameAstData);
+    }
+
     i++;
   } while (i < files.length);
 
   outLanguageJSON({ page, language, outputPath });
+
+  browser.close();
 }
 
 const outLanguageJSON = async ({ page, language, outputPath }) => {
-  language = language.filter((v) => v !== "en");
-  if (language.length) {
-    let i = 0;
-    const zhJSON = require(path.resolve(process.cwd(), outputPath, "zh.json"));
-    const astData = Object.keys(zhJSON).map((k) => ({
-      id: k,
-      value: zhJSON[k],
-    }));
+  const otherLanguage = language.filter((v) => v !== "en");
+  const zhJSON = getJSON({ outputPath, lang: "zh" });
+  const astData = Object.keys(zhJSON).map((k) => ({
+    id: k,
+    value: zhJSON[k],
+  }));
 
+  if (otherLanguage.length) {
+    let i = 0;
     do {
-      const lang = language[i];
-      const translateData = await translate({
-        page,
-        astData,
-        from: "zh",
-        to: lang,
-      });
-      outJSON({ translateData, lang, outputPath });
+      const lang = otherLanguage[i];
+      const diffAstData = getDiffAstData({ astData, outputPath, lang });
+
+      if (diffAstData.length) {
+        const translateData = await translate({
+          page,
+          astData: diffAstData,
+          from: "zh",
+          to: lang,
+        });
+        outJSON({ translateData, lang, outputPath });
+      }
+
       i++;
-    } while (i < language.length);
+    } while (i < otherLanguage.length);
   }
+};
+
+const getJSON = ({ outputPath, lang }) => {
+  try {
+    return require(path.resolve(process.cwd(), outputPath, `${lang}.json`));
+  } catch (err) {
+    return {};
+  }
+};
+
+const getDiffAstData = ({ astData, outputPath, lang }) => {
+  const langJSON = getJSON({ outputPath, lang });
+  return astData.filter(
+    (item) =>
+      !Object.keys(langJSON).find((k) =>
+        lang === "zh" ? langJSON[k] === item.value : k === item.id
+      )
+  );
 };
 
 module.exports = main;
