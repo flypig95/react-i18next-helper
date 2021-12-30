@@ -103,12 +103,14 @@ const ast = ({ code, babelConfig = {}, file, fnName, fnWithZh }) => {
 };
 
 const isPushData = ({ value, path, fnWithZh, fnName }) => {
-  if (fnWithZh) {
-    const parentNode = path.findParent((x) => x.isCallExpression())?.node || {};
-    return helper.isChinease(value) && parentNode.callee?.name !== fnName;
-  } else {
-    return helper.isChinease(value);
-  }
+  const parentNode = path.findParent((x) => x.isCallExpression())?.node || {};
+  return helper.isChinease(value) && parentNode.callee?.name !== fnName;
+  // if (fnWithZh) {
+  //   const parentNode = path.findParent((x) => x.isCallExpression())?.node || {};
+  //   return helper.isChinease(value) && parentNode.callee?.name !== fnName;
+  // } else {
+  //   return helper.isChinease(value);
+  // }
 };
 
 module.exports = ast;

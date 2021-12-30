@@ -2,6 +2,7 @@ const fs = require("fs");
 
 const replace = function (diffIndex, current) {
   const { file, start, end, id, value, replaceFn, offset = 0 } = current;
+  if (!id) return diffIndex;
   let code = fs.readFileSync(file, "utf-8");
   const replacement = replaceFn(id);
 

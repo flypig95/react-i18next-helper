@@ -10,7 +10,7 @@ const outJSON = require("./utils/outJSON");
 const babelConfig = require("./babelConfig");
 
 async function main({
-  language = ["en"],
+  language = [],
   src = [],
   excluded = [],
   outputPath = "locale",

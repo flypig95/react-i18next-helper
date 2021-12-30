@@ -20,9 +20,9 @@ const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
         .catch(async (err) => await page.reload());
       const data = await response.json();
       if (data.error) {
-        throw new Error(data.errmsg);
+        throw new Error("访问出现异常，请稍后重试！");
       }
-      const dst = data.trans_result?.data[0]?.dst?.toLowerCase();
+      const dst = data.trans_result.data[0]?.dst?.toLowerCase();
 
       translateData[i] = {
         ...translateData[i],
@@ -39,7 +39,9 @@ const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
         translateData[i].id = id;
       }
     } catch (err) {
-      console.error(chalk.red(`翻译【${value}】至【${to}】失败：${err}`));
+      console.error(
+        chalk.red(`翻译【${value}】至【${to}】失败: ${err.message}`)
+      );
     }
 
     // if (i === 10) {
