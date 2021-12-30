@@ -61,7 +61,7 @@ async function main({
     i++;
   } while (i < files.length);
 
-  outLanguageJSON({ page, language, outputPath });
+  await outLanguageJSON({ page, language, outputPath });
 
   browser.close();
 }

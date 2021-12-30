@@ -19,21 +19,27 @@ const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
         )
         .catch(async (err) => await page.reload());
       const data = await response.json();
-      const dst = data.trans_result.data[0]?.dst?.toLowerCase();
-
-      const id = dst
-        .split(" ")
-        .slice(0, 4)
-        .join("-")
-        .replace(/[?!:;,.'']+/g, "");
+      if (data.error) {
+        throw new Error(data.errmsg);
+      }
+      const dst = data.trans_result?.data[0]?.dst?.toLowerCase();
 
       translateData[i] = {
-        id,
-        dst,
         ...translateData[i],
+        dst,
       };
+
+      if (to === "en") {
+        const id = dst
+          .split(" ")
+          .slice(0, 4)
+          .join("-")
+          .replace(/[?!:;,.'']+/g, "");
+
+        translateData[i].id = id;
+      }
     } catch (err) {
-      console.error(chalk.red(`翻译${value}至${to}失败`));
+      console.error(chalk.red(`翻译【${value}】至【${to}】失败：${err}`));
     }
 
     // if (i === 10) {
