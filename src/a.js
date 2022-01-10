@@ -8,5 +8,5 @@ i18n({
   // addonBefore: 'import { useTranslation, Trans } from "react-i18next"',
   // fnName,
   // fnWithZh: false,
-  headless: false,
+  // headless: false,
 });

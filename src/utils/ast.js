@@ -19,8 +19,8 @@ const ast = ({ code, babelConfig = {}, file, fnName, fnWithZh }) => {
           value,
           replaceFn: (id) =>
             fnWithZh
-              ? `{${fnName}({id: '${id}', zh: '${helper.trim(value)}'})}`
-              : `{${fnName}({id: '${id}'})}`,
+              ? `{${fnName}('${id}', { zh: '${helper.trim(value)}'})}`
+              : `{${fnName}('${id}')}`,
         };
         data.push(obj);
       }
@@ -41,8 +41,8 @@ const ast = ({ code, babelConfig = {}, file, fnName, fnWithZh }) => {
           value,
           replaceFn: (id) =>
             fnWithZh
-              ? `{${fnName}({id: '${id}', zh: '${helper.trim(value)}'})}`
-              : `{${fnName}({id: '${id}'})}`,
+              ? `{${fnName}('${id}', { zh: '${helper.trim(value)}'})}`
+              : `{${fnName}('${id}')}`,
         };
         data.push(obj);
       }
@@ -62,8 +62,8 @@ const ast = ({ code, babelConfig = {}, file, fnName, fnWithZh }) => {
           value: raw,
           replaceFn: (id) =>
             fnWithZh
-              ? `\${${fnName}({id: '${id}', zh: '${helper.trim(raw)}'})}`
-              : `\${${fnName}({id: '${id}'})}`,
+              ? `\${${fnName}('${id}', { zh: '${helper.trim(raw)}'})}`
+              : `\${${fnName}('${id}')}`,
         };
         data.push(obj);
       }
@@ -92,8 +92,8 @@ const ast = ({ code, babelConfig = {}, file, fnName, fnWithZh }) => {
           offset: -2,
           replaceFn: (id) =>
             fnWithZh
-              ? `${fnName}({id: '${id}', zh: '${helper.trim(value)}'})`
-              : `${fnName}({id: '${id}'})`,
+              ? `${fnName}('${id}', { zh: '${helper.trim(value)}'})`
+              : `${fnName}('${id}')`,
         };
         data.push(obj);
       }
