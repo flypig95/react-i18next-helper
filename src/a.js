@@ -5,7 +5,8 @@ i18n({
   // outputPath: "locale",
   src: ["src/react"],
   excluded: [],
+  // addonBefore: 'import { useTranslation, Trans } from "react-i18next"',
   // fnName,
-  fnWithZh: false,
+  // fnWithZh: false,
   headless: false,
 });

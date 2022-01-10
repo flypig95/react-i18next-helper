@@ -2,6 +2,7 @@ const progress = require("progress");
 const fs = require("fs");
 const path = require("path");
 const puppeteer = require("puppeteer");
+const chalk = require("chalk");
 const getFiles = require("./utils/getFiles");
 const ast = require("./utils/ast");
 const translate = require("./utils/translate");
@@ -14,10 +15,14 @@ async function main({
   src = [],
   excluded = [],
   outputPath = "locale",
+  addonBefore = "",
   fnName = "t",
   fnWithZh = false,
   headless = true,
 }) {
+  language = ["en"];
+  addonBefore='';
+
   const browser = await puppeteer.launch({ headless });
   const page = (await browser.pages())[0];
   const files = getFiles(src, excluded);
@@ -51,11 +56,11 @@ async function main({
         outJSON({ translateData, lang: "en", outputPath });
       }
 
-      changeFile(translateData);
+      changeFile({ translateData, addonBefore });
     }
 
     if (sameAstData.length) {
-      changeFile(sameAstData);
+      changeFile({ translateData: sameAstData, addonBefore });
     }
 
     i++;
@@ -64,6 +69,7 @@ async function main({
   await outLanguageJSON({ page, language, outputPath });
 
   browser.close();
+  console.log(chalk.green("执行完成！"));
 }
 
 const outLanguageJSON = async ({ page, language, outputPath }) => {
