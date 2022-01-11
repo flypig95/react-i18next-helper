@@ -1,4 +1,4 @@
-const progress = require("progress");
+const ProgressBar = require("progress");
 const fs = require("fs");
 const path = require("path");
 const puppeteer = require("puppeteer");
@@ -21,31 +21,44 @@ async function main({
   headless = true,
 }) {
   language = ["en"];
-  addonBefore='';
+  addonBefore = "";
+  console.log(chalk.green("初始化..."));
 
   const browser = await puppeteer.launch({ headless });
   const page = (await browser.pages())[0];
   const files = getFiles(src, excluded);
+  const filesLength = files.length;
   let i = 0;
   let file = "";
+
+  const bar = new ProgressBar(
+    `国际化：:fileIndex/${filesLength}个文件 [:bar] :percent 耗时:elapsed秒`,
+    {
+      complete: "=",
+      incomplete: " ",
+      width: 20,
+      total: filesLength,
+    }
+  );
 
   do {
     file = files[i];
     const code = fs.readFileSync(file, "utf8");
+    const zhJSON = getJSON({ outputPath, lang: "zh" });
+    let translateData = [];
     const astData = ast({ code, babelConfig, file, fnName, fnWithZh });
     const diffAstData = getDiffAstData({ astData, outputPath, lang: "zh" });
-    const zhJSON = getJSON({ outputPath, lang: "zh" });
     const sameAstData = astData.filter((item) => {
       Object.keys(zhJSON).forEach((k) => {
-        if (zhJSON[k] === item.value) {
+        if (zhJSON[k].trim() === item.value.trim()) {
           item.id = k;
         }
       });
-      return !diffAstData.find((v) => item.value === v.value);
+      return !diffAstData.find((v) => item.value.trim() === v.value.trim());
     });
 
     if (diffAstData.length) {
-      const translateData = await translate({
+      translateData = await translate({
         page,
         astData: diffAstData,
         from: "zh",
@@ -55,16 +68,17 @@ async function main({
       if (language.indexOf("en") > -1) {
         outJSON({ translateData, lang: "en", outputPath });
       }
-
-      changeFile({ translateData, addonBefore });
     }
 
-    if (sameAstData.length) {
-      changeFile({ translateData: sameAstData, addonBefore });
-    }
+    translateData = translateData.concat(sameAstData);
+    changeFile({ translateData, addonBefore });
+
+    bar.tick({
+      fileIndex: i + 1,
+    });
 
     i++;
-  } while (i < files.length);
+  } while (i < filesLength);
 
   // await outLanguageJSON({ page, language, outputPath });
 
@@ -114,7 +128,9 @@ const getDiffAstData = ({ astData, outputPath, lang }) => {
   return astData.filter(
     (item) =>
       !Object.keys(langJSON).find((k) =>
-        lang === "zh" ? langJSON[k] === item.value : k === item.id
+        lang === "zh"
+          ? langJSON[k].trim() === item.value?.trim()
+          : k === item.id
       )
   );
 };
