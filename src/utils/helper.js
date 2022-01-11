@@ -3,5 +3,5 @@ module.exports.isChinease = function (value) {
 };
 
 module.exports.trim = function (value) {
-  return value.replace("\n", "").trim();
+  return value.replace(/\s*/g, "").trim();
 };

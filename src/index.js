@@ -26,7 +26,8 @@ async function main({
 
   const browser = await puppeteer.launch({ headless });
   const page = (await browser.pages())[0];
-  const files = getFiles(src, excluded);
+  const files = getFiles(src, excluded).filter((v) => /(.tsx|.jsx)$/.test(v));
+
   const filesLength = files.length;
   let i = 0;
   let file = "";
@@ -57,6 +58,10 @@ async function main({
       return !diffAstData.find((v) => item.value.trim() === v.value.trim());
     });
 
+    bar.tick({
+      fileIndex: i + 1,
+    });
+
     if (diffAstData.length) {
       translateData = await translate({
         page,
@@ -70,12 +75,10 @@ async function main({
       }
     }
 
-    translateData = translateData.concat(sameAstData);
+    translateData = translateData
+      .concat(sameAstData)
+      .sort((a, b) => a.start - b.start);
     changeFile({ translateData, addonBefore });
-
-    bar.tick({
-      fileIndex: i + 1,
-    });
 
     i++;
   } while (i < filesLength);

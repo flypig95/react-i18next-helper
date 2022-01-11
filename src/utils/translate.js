@@ -1,11 +1,14 @@
 const chalk = require("chalk");
+const helper = require("./helper");
 
 const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
   if (!astData.length) return [];
   const translateData = astData.slice();
   let i = 0;
   do {
-    const { value } = translateData[i];
+    let { value } = translateData[i];
+    value = helper.trim(value);
+
     try {
       await page.goto(`https://fanyi.baidu.com/#${from}/${to}/${value}`);
       if (i === 0) await page.reload();
@@ -34,7 +37,7 @@ const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
           .split(" ")
           .slice(0, 4)
           .join("-")
-          .replace(/[?!:;,.'']+/g, "");
+          .replace(/([?!:;,.'']+|^-|-$)/g, "");
 
         translateData[i].id = id;
       }

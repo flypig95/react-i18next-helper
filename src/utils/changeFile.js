@@ -1,6 +1,9 @@
 const fs = require("fs");
 
 const changeFile = ({ translateData, addonBefore }) => {
+  if (!translateData.length) {
+    return;
+  }
   translateData.reduce(function (diffIndex, current, index, arr) {
     const { file, start, end, id, value, replaceFn, offset = 0 } = current;
     if (!id) return diffIndex;
