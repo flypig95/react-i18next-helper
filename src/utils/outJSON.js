@@ -26,8 +26,8 @@ const outJSON = ({ translateData, lang, outputPath }) => {
   translateData.forEach((item) => {
     const { id, dst, value } = item;
     if (!langData[id] && dst && id) {
-      const v = lang === "zh" ? value : dst;
-      langData[id] = helper.trim(v);
+      const v = lang === "zh" ? helper.trim(value) : dst.trim();
+      langData[id] = v;
     }
   });
 
