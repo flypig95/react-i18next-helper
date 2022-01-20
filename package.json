@@ -1,5 +1,5 @@
 {
-  "name": "react-i18n-helper",
+  "name": "react-i18next-helper",
   "version": "1.0.0",
   "description": "react项目国际化辅助工具",
   "main": "./src/index.js",
@@ -10,6 +10,7 @@
   ],
   "author": "陈聪",
   "license": "ISC",
+  "repository": "https://github.com/flypig95/react-i18next-helper",
   "dependencies": {
     "@babel/core": "^7.15.0",
     "@babel/generator": "^7.15.0",
