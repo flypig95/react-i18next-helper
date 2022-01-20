@@ -71,3 +71,35 @@ function Hello() {
 - fnName: 中文替换后的方法名。例如: t()、formatMessage()，默认值 't'
 - fnWithZh: 中文替换后的方法中是否需要中文用于辅助代码阅读。例如: t('hello',{zh: '你好'})，react-i18next-helper 会忽略 t('hello',{zh: '你好'})里的中文，默认值 false
 - headless: 同[puppeteer](http://puppeteerjs.com/#?product=Puppeteer&version=v11.0.0&show=api-puppeteerlaunchoptions)中的参数 headless。headless 为 false 时会开启有界面模式，经测试有界面模式发送翻译请求更加稳定，建议保持默认值，默认值 false
+
+### 案例
+
+1. 配合 react-i18next 使用
+
+```jsx
+import React from "react";
+import i18n from "i18next";
+import { initReactI18next, useTranslation } from "react-i18next";
+import enJson from "./locale/en.json";
+import zhJson from "./locale/zh.json";
+
+i18n.use(initReactI18next).init({
+  resources: {
+    en: enJson,
+    zh: zhJson,
+  },
+  lng: "zh",
+  interpolation: {
+    escapeValue: false,
+  },
+});
+
+const App = () => {
+  const { t } = useTranslation();
+  window.t = t;
+
+  return <div className="App">...</div>;
+};
+
+export default App;
+```

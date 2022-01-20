@@ -117,7 +117,7 @@ async function main({
   browser.close();
   global.untranslated
     ? console.warn("还有漏网之鱼，请稍后再试！")
-    : console.green("转换完成！");
+    : console.success("转换完成！");
 }
 
 const outLanguageJSON = async ({ page, language, outputPath }) => {
