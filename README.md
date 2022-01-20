@@ -85,8 +85,12 @@ import zhJson from "./locale/zh.json";
 
 i18n.use(initReactI18next).init({
   resources: {
-    en: enJson,
-    zh: zhJson,
+    en: {
+      translation: enJson,
+    },
+    zh: {
+      translation: zhJson,
+    },
   },
   lng: "zh",
   interpolation: {
