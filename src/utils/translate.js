@@ -10,7 +10,9 @@ const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
     value = helper.trim(value);
 
     try {
-      await page.goto(`https://fanyi.baidu.com/#${from}/${to}/${value}`);
+      await page.goto(`https://fanyi.baidu.com/#${from}/${to}/${value}`, {
+        timeout: 5000,
+      });
       if (i === 0) await page.reload();
 
       const response = await page
@@ -42,19 +44,16 @@ const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
         translateData[i].id = id;
       }
     } catch (err) {
-      console.error(
-        chalk.red(`翻译【${value}】至【${to}】失败: ${err.message}`)
-      );
+      console.error(`翻译【${value}】至【${to}】失败: ${err.message}`);
+      global.untranslated = true;
     }
 
-    // if (i === 10) {
-    //   // wait 2s for 10 translation
-    //   await new Promise((resolve, reject) => {
-    //     setTimeout(() => {
-    //       resolve();
-    //     }, 2000);
-    //   });
-    // }
+    // wait 1s
+    // await new Promise((resolve, reject) => {
+    //   setTimeout(() => {
+    //     resolve();
+    //   }, 1000);
+    // });
 
     i++;
   } while (i < translateData.length);

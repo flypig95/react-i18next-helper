@@ -12,19 +12,45 @@ const babelConfig = require("./babelConfig");
 
 async function main({
   language = [],
-  src = [],
+  src = ["src"],
   excluded = [],
   outputPath = "locale",
   addonBefore = "",
   fnName = "t",
   fnWithZh = false,
-  headless = true,
+  headless = false,
 }) {
+  if (!Array.isArray(src)) {
+    console.error("src需传入array类型数据");
+    return;
+  } else if (!Array.isArray(excluded)) {
+    console.error("src需传入array类型数据");
+    return;
+  } else if (typeof outputPath !== "string") {
+    console.error("outputPath需传入string类型数据");
+    return;
+  } else if (typeof fnName !== "string") {
+    console.error("fnName需传入string类型数据");
+    return;
+  } else if (typeof fnWithZh !== "boolean") {
+    console.error("fnName需传入boolean类型数据");
+    return;
+  } else if (typeof headless !== "boolean") {
+    console.error("headless需传入boolean类型数据");
+    return;
+  }
+
   language = ["en"];
   addonBefore = "";
-  console.log(chalk.green("初始化..."));
+  console.success("初始化...");
 
-  const browser = await puppeteer.launch({ headless });
+  const browser = await puppeteer.launch({
+    headless,
+    defaultViewport: {
+      width: 1600,
+      height: 800,
+    },
+  });
   const page = (await browser.pages())[0];
   const files = getFiles(src, excluded).filter((v) => /(.tsx|.jsx)$/.test(v));
 
@@ -35,12 +61,15 @@ async function main({
   const bar = new ProgressBar(
     `国际化：:fileIndex/${filesLength}个文件 [:bar] :percent 耗时:elapsed秒`,
     {
-      complete: "=",
       incomplete: " ",
       width: 20,
-      total: filesLength,
+      total: filesLength + 1,
     }
   );
+
+  bar.tick({
+    fileIndex: 0,
+  });
 
   do {
     file = files[i];
@@ -56,10 +85,6 @@ async function main({
         }
       });
       return !diffAstData.find((v) => item.value.trim() === v.value.trim());
-    });
-
-    bar.tick({
-      fileIndex: i + 1,
     });
 
     if (diffAstData.length) {
@@ -81,12 +106,18 @@ async function main({
     changeFile({ translateData, addonBefore });
 
     i++;
+
+    bar.tick({
+      fileIndex: i,
+    });
   } while (i < filesLength);
 
   // await outLanguageJSON({ page, language, outputPath });
 
   browser.close();
-  console.log(chalk.green("执行完成！"));
+  global.untranslated
+    ? console.warn("还有漏网之鱼，请稍后再试！")
+    : console.green("转换完成！");
 }
 
 const outLanguageJSON = async ({ page, language, outputPath }) => {
@@ -136,6 +167,18 @@ const getDiffAstData = ({ astData, outputPath, lang }) => {
           : k === item.id
       )
   );
+};
+
+console.error = function (v) {
+  console.log(chalk.red(v));
+};
+
+console.success = function (v) {
+  console.log(chalk.green(v));
+};
+
+console.warn = function (v) {
+  console.log(chalk.yellow(v));
 };
 
 module.exports = main;

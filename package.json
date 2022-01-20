@@ -2,10 +2,7 @@
   "name": "react-i18n-helper",
   "version": "1.0.0",
   "description": "react项目国际化辅助工具",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "main": "./src/index.js",
   "keywords": [
     "react",
     "i18n",
