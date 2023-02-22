@@ -66,7 +66,7 @@ function Hello() {
 ### 选项
 
 - src: 需要替换中文的文件夹。例如: ['src/page','src/component']，默认值 ['src']
-- excluded: 需要替换中文的文件夹。例如: ['src/service','src/store']，默认值 []
+- excluded: 不需要替换中文的文件夹。例如: ['src/service','src/store']，默认值 []
 - outputPath: en.json、zh.json 的输出文件夹，默认 locale
 - fnName: 中文替换后的方法名。例如: t()、formatMessage()，默认值 't'
 - fnWithZh: 中文替换后的方法中是否需要中文用于辅助代码阅读。例如: t('hello',{zh: '你好'})，react-i18next-helper 会忽略 t('hello',{zh: '你好'})里的中文，默认值 false
