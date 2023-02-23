@@ -52,7 +52,7 @@ async function main({
     },
   });
   const page = (await browser.pages())[0];
-  const files = getFiles(src, excluded).filter((v) => /(.tsx|.jsx)$/.test(v));
+  const files = getFiles(src, excluded).filter((v) => /(.js|.ts|.tsx|.jsx)$/.test(v));
 
   const filesLength = files.length;
   let i = 0;

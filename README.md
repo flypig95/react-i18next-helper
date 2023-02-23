@@ -9,7 +9,7 @@ react-i18next-helper 是一个解放双手的国际化辅助工具，自动将�
 
 ### 特性
 
-1. 支持 jsx、tsx
+1. 支持 js、ts、jsx、tsx文件
 2. 支持与 react-i18next、umi 等国际化工具一起使用
 3. 可以将中文替换成形如: t('hello', {zh: '你好'}) 辅助代码阅读
 
