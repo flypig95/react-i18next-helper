@@ -11,7 +11,7 @@ const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
 
     try {
       await page.goto(`https://fanyi.baidu.com/#${from}/${to}/${value}`, {
-        timeout: 10000,
+        timeout: 60000,
       });
       if (i === 0) await page.reload();
 
