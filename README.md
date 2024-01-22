@@ -11,7 +11,7 @@ react-i18next-helper 是一个解放双手的国际化辅助工具，自动将�
 
 1. 支持 js、ts、jsx、tsx文件
 2. 支持与 react-i18next、umi 等国际化工具一起使用
-3. 可以将中文替换成形如: t('hello', {zh: '你好'}) 辅助代码阅读
+3. 可以将中文替换成形如: t('hello', {zh: '你好'})
 
 ### 用法
 
@@ -24,9 +24,12 @@ i18n({
   src: ["src/react"],
   excluded: [],
   // outputPath: "locale",
-  // fnName: "formatMessage",
-  // fnWithZh: false,
+  // fnName: "t",
+  fnWithZh: true,
   // headless: false,
+  // language: ["en", "de"],
+  // addonBefore: 'import { useTranslation, Trans } from "react-i18next"',
+  keyPrefix: true,
 });
 ```
 
@@ -53,10 +56,10 @@ function Hello() {
 ```jsx
 ...
 function Hello() {
-  const world = t('world');
+  const world = t('react-i18next-helper/src/react/index/world', { zh: '世界'});
   return (
     <div>
-      <Input placeholder={t('please-enter')} />{t('hello')}{world}
+      <Input placeholder={t('react-i18next-helper/src/react/index/enter', { zh: '请输入'})} />{t('react-i18next-helper/src/react/index/hello', { zh: '你好'})}{world}
     </div>
   );
 }
@@ -69,8 +72,9 @@ function Hello() {
 - excluded: 不需要替换中文的文件夹。例如: ['src/service','src/store']，默认值 []
 - outputPath: en.json、zh.json 的输出文件夹，默认 locale
 - fnName: 中文替换后的方法名。例如: t()、formatMessage()，默认值 't'
-- fnWithZh: 中文替换后的方法中是否需要中文用于辅助代码阅读。例如: t('hello',{zh: '你好'})，react-i18next-helper 会忽略 t('hello',{zh: '你好'})里的中文，默认值 false
+- fnWithZh: 中文替换后的方法中是否有中文。例如: t('hello',{zh: '你好'})，react-i18next-helper 会忽略 t('hello',{zh: '你好'})里的中文，默认值 false
 - headless: 同[puppeteer](http://puppeteerjs.com/#?product=Puppeteer&version=v11.0.0&show=api-puppeteerlaunchoptions)中的参数 headless。headless 为 false 时会开启有界面模式，经测试有界面模式发送翻译请求更加稳定，建议保持默认值，默认值 false
+- keyPrefix: 给字典的key添加文件路径的前缀。例如：t('react-i18next-helper/src/react/index/world')中的'react-i18next-helper/src/react/index/'
 
 ### 案例
 
@@ -100,7 +104,10 @@ i18n.use(initReactI18next).init({
 
 const App = () => {
   const { t } = useTranslation();
-  window.t = t;
+  window.t = function (key, obj) {
+    const value = t(key);
+    return value || obj.zh || '';
+  };
 
   return <div className="App">...</div>;
 };

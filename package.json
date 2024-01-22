@@ -1,6 +1,6 @@
 {
   "name": "react-i18next-helper",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "react项目国际化辅助工具",
   "main": "./src/index.js",
   "keywords": [

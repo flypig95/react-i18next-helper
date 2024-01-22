@@ -19,6 +19,7 @@ async function main({
   fnName = "t",
   fnWithZh = false,
   headless = false,
+  keyPrefix = false,
 }) {
   if (!Array.isArray(src)) {
     console.error("src需传入array类型数据");
@@ -52,7 +53,9 @@ async function main({
     },
   });
   const page = (await browser.pages())[0];
-  const files = getFiles(src, excluded).filter((v) => /(.js|.ts|.tsx|.jsx)$/.test(v));
+  const files = getFiles(src, excluded).filter((v) =>
+    /(.js|.ts|.tsx|.jsx)$/.test(v)
+  );
 
   const filesLength = files.length;
   let i = 0;
@@ -77,7 +80,12 @@ async function main({
     const zhJSON = getJSON({ outputPath, lang: "zh" });
     let translateData = [];
     const astData = ast({ code, babelConfig, file, fnName, fnWithZh });
-    const diffAstData = getDiffAstData({ astData, outputPath, lang: "zh" });
+    const diffAstData = getDiffAstData({
+      astData,
+      outputPath,
+      lang: "zh",
+      keyPrefix,
+    });
     const sameAstData = astData.filter((item) => {
       Object.keys(zhJSON).forEach((k) => {
         if (zhJSON[k].trim() === item.value.trim()) {
@@ -93,6 +101,7 @@ async function main({
         astData: diffAstData,
         from: "zh",
         to: "en",
+        keyPrefix,
       });
       outJSON({ translateData, lang: "zh", outputPath });
       if (language.indexOf("en") > -1) {
@@ -157,12 +166,12 @@ const getJSON = ({ outputPath, lang }) => {
   }
 };
 
-const getDiffAstData = ({ astData, outputPath, lang }) => {
+const getDiffAstData = ({ astData, outputPath, lang, keyPrefix }) => {
   const langJSON = getJSON({ outputPath, lang });
   return astData.filter(
     (item) =>
       !Object.keys(langJSON).find((k) =>
-        lang === "zh"
+        lang === "zh" && !keyPrefix
           ? langJSON[k].trim() === item.value?.trim()
           : k === item.id
       )

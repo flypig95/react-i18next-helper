@@ -1,12 +1,19 @@
 const chalk = require("chalk");
 const helper = require("./helper");
 
-const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
+const translate = async ({
+  page,
+  astData = [],
+  from = "zh",
+  to = "en",
+  keyPrefix = false,
+}) => {
   if (!astData.length) return [];
   const translateData = astData.slice();
+  const projectDirname = process.cwd().split("/").slice(-1)[0];
   let i = 0;
   do {
-    let { value } = translateData[i];
+    let { value, file } = translateData[i];
     value = helper.trim(value);
 
     try {
@@ -41,7 +48,13 @@ const translate = async ({ page, astData = [], from = "zh", to = "en" }) => {
           .join("-")
           .replace(/([?!:;,.'']+|^-|-$)/g, "");
 
-        translateData[i].id = id;
+        if (keyPrefix) {
+          const regExp = new RegExp(`^${process.cwd()}`, "g");
+          const prefix = file.split(".")[0].replace(regExp, projectDirname);
+          translateData[i].id = `${prefix}/${id}`;
+        } else {
+          translateData[i].id = id;
+        }
       }
     } catch (err) {
       console.error(`翻译【${value}】至【${to}】失败: ${err.message}`);

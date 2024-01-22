@@ -5,8 +5,9 @@ i18n({
   excluded: [],
   // outputPath: "locale",
   // fnName: "t",
-  // fnWithZh: false,
+  fnWithZh: true,
   // headless: false,
   // language: ["en", "de"],
   // addonBefore: 'import { useTranslation, Trans } from "react-i18next"',
+  keyPrefix: true,
 });
